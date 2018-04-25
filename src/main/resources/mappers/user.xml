@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.data.dashboard.dao.UserMapper">
+	<resultMap id="userMap" type="com.data.dashboard.entity.User">
+		<id property="userId" column="USER_ID" javaType="String" />
+		<result property="openId" column="OPENID" javaType="String" />
+		<result property="avatarUrl" column="AVATAR_URL" javaType="String" />
+		<result property="city" column="CITY" javaType="String" />
+		<result property="country" column="COUNTRY" javaType="String" />
+		<result property="firstLoginTime" column="FIRSTLOGINTIME" javaType="String" />
+		<result property="gender" column="GENDER" javaType="String" />
+		<result property="jsCode" column="JSCODE" javaType="String" />
+		<result property="language" column="LANGUAGE" javaType="String" />
+		<result property="lastLoginTime" column="LASTLOGINTIME" javaType="String" />
+		<result property="loginCount" column="LOGINCOUNT" javaType="String" />
+		<result property="nickName" column="NICKNAME" javaType="String" />
+		<result property="province" column="PROVINCE" javaType="String" />
+		<result property="sessionKey" column="SESSIONKEY" javaType="String" />
+		<result property="code" column="CODE" javaType="String" />
+	</resultMap>
+	
+	<select id="fetchUser" parameterType="String" resultMap="userMap">
+		SELECT * FROM MINIPROGRAM_USER WHERE OPENID = #{openId,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="fetchUserById" parameterType="String" resultMap="userMap">
+		SELECT * FROM MINIPROGRAM_USER WHERE USER_ID = #{userId,jdbcType=VARCHAR}
+	</select>
+
+	<insert id="addUser" parameterType="com.data.dashboard.entity.User">
+		INSERT INTO MINIPROGRAM_USER (
+		USER_ID,
+		OPENID,
+		AVATAR_URL,
+		CITY,
+		COUNTRY,
+		FIRSTLOGINTIME,
+		GENDER,
+		JSCODE,
+		LANGUAGE,
+		LOGINCOUNT,
+		NICKNAME,
+		PROVINCE
+		)
+		VALUES
+		(
+		#{userId},
+		#{openId},
+		#{avatarUrl},
+		#{city},
+		#{country},
+		TO_DATE (
+		#{firstLoginTime},
+		'yyyy-mm-dd hh24:mi:ss'
+		),
+		#{gender},
+		#{jsCode},
+		#{language},
+		#{loginCount},
+		#{nickName},
+		#{province}
+		)
+	</insert>
+	
+	<update id="updUser" parameterType="com.data.dashboard.entity.User">
+		UPDATE MINIPROGRAM_USER
+		SET LASTLOGINTIME = TO_DATE (#{lastLoginTime},'yyyy-mm-dd hh24:mi:ss'),
+		 LOGINCOUNT = #{loginCount}
+		WHERE
+			OPENID = #{openId}
+	</update>
+	
+	<update id="bandCode" parameterType="com.data.dashboard.entity.UserCode">
+		UPDATE MINIPROGRAM_USER SET CODE = #{userCode} WHERE USER_ID = #{userId}
+	</update>
+	
+	
+	<select id="checkUserExist" parameterType="String" resultMap="userMap">
+		SELECT count(0) FROM MINIPROGRAM_USER WHERE OPENID = #{openId,jdbcType=VARCHAR}
+	</select>
+  
+</mapper>

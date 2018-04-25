@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.data.dashboard.dao.MsgAnalysisMapper">
+	<resultMap id="msgAnalysisMap" type="com.data.dashboard.entity.MsgAnalysis">
+		<result property="regionName" column="bscmc" javaType="String" />
+		<result property="unresponsiveTimes" column="wxycs" javaType="String" />
+		<result property="avgResponseTime" column="pjxysj" javaType="String" />
+		<result property="score" column="jl_bf" javaType="String" />
+	</resultMap>
+
+	<select id="queryAgentMsg" parameterType="java.util.HashMap" resultMap="msgAnalysisMap">
+		SELECT t_1.bscmc bscmc, t_1.wxycs wxycs, t_1.pjxysj pjxysj, t_1.jl jl, t_1.jl_bf jl_bf, t_1.max_jl max_jl FROM (select m.*,max(jl)over()as max_jl,NVL(round((1-jl/(max(jl)over()))*100,2),0) as jl_bf
+		from(
+		select bscmc,
+		       cast(sum(wxycs) as decimal(18,2)) as wxycs,
+		       cast(sum(pjxysj) as decimal(18,2)) as pjxysj,
+		       cast(sum(jl) as decimal(18,2)) as jl
+		  from (
+		        select bscmc,
+		               sum(wxycs) as wxycs,
+		               avg(Mod((lag_dqsj-dqsj)*1440,60)) as pjxysj,
+		               power((power((sum(wxycs)/max(sum(wxycs))over())*0.7,2))+(power((decode(max(avg(Mod((lag_dqsj-dqsj)*1440,60)))over(),0,0,avg(Mod((lag_dqsj-dqsj)*1440,60))/max(avg(Mod((lag_dqsj-dqsj)*1440,60)))over())*0.3),2)),0.5) as JL
+		      from T_DW_XXFX_XXFSMXB a
+		         where bscmc=nvl(case when '全国' in  ('全国',' ','') then null else '全国' end ,bscmc) and 
+		         dqrq between 
+				<choose>
+					<when test="condition=='lastMonth'">
+						to_char(trunc(add_months(last_day(sysdate), -2) + 1), 'yyyy-mm-dd') and to_char(trunc(add_months(last_day(sysdate), -1) + 0), 'yyyy-mm-dd')
+					</when>
+					<otherwise>
+						to_char(trunc(add_months(last_day(sysdate), -1) + 1), 'yyyy-mm-dd') and to_char(sysdate,'yyyy-mm-dd')
+					</otherwise>
+				</choose>
+		         group by bscmc
+		        union all
+		        select b.descname,
+		               0 as wxycs,
+		               0 as pxysj,
+		               0 as jl
+		          from v_dimension_store b
+		         where b.stype='0'
+		           and b.descname not in ('全国')
+		         )
+		 group by bscmc
+		 )M
+		) t_1 ORDER BY
+		<choose>
+			<when test="sort=='wxycs'">
+				wxycs
+			</when>
+			<when test="sort=='pjxysj'">
+				pjxysj
+			</when>
+			<otherwise>
+				jl_bf
+			</otherwise>
+		</choose> 
+		DESC
+	</select>
+	
+	
+	<select id="queryDistributorMsg" parameterType="java.util.HashMap" resultMap="msgAnalysisMap">
+		SELECT * FROM(
+		SELECT t_1.jxsmc bscmc, t_1.wxycs wxycs, t_1.pjxysj pjxysj, t_1.jl jl, t_1.max_jl max_jl, t_1.jl_bf jl_bf FROM (select m.*,max(jl)over()as max_jl,NVL(round((1-jl/(max(jl)over()))*100,2),0) as jl_bf
+		from(
+		select jxsmc,
+		       cast(sum(wxycs) as decimal(18,2)) as wxycs,
+		       cast(sum(pjxysj) as decimal(18,2)) as pjxysj,
+		       cast(sum(jl) as decimal(18,2)) as jl
+		  from (
+		        select jxsmc,
+		               sum(wxycs) as wxycs,
+		               avg(Mod((lag_dqsj-dqsj)*1440,60)) as pjxysj,
+		               power((power((sum(wxycs)/max(sum(wxycs))over())*0.7,2))+(power((decode(max(avg(Mod((lag_dqsj-dqsj)*1440,60)))over(),0,0,avg(Mod((lag_dqsj-dqsj)*1440,60))/max(avg(Mod((lag_dqsj-dqsj)*1440,60)))over())*0.3),2)),0.5) as JL
+		               /* power(power(sum(wxycs)/max(sum(wxycs))over(),2)+power(decode(max(avg(Mod((lag_dqsj-dqsj)*1440,60)))over(),0,0,avg(Mod((lag_dqsj-dqsj)*1440,60))/max(avg(Mod((lag_dqsj-dqsj)*1440,60)))over()),2),0.5) as JL */
+		          from T_DW_XXFX_XXFSMXB a
+		         where bscid= #{regionId,jdbcType=VARCHAR}
+		           and dqrq between
+				   <choose>
+						<when test="condition=='lastMonth'">
+							to_char(trunc(add_months(last_day(sysdate), -2) + 1), 'yyyy-mm-dd') and to_char(trunc(add_months(last_day(sysdate), -1) + 0), 'yyyy-mm-dd')
+						</when>
+						<otherwise>
+							to_char(trunc(add_months(last_day(sysdate), -1) + 1), 'yyyy-mm-dd') and to_char(sysdate,'yyyy-mm-dd')
+						</otherwise>
+					</choose>
+		         group by jxsmc
+		
+		         )
+		 group by jxsmc
+		 )M) t_1
+		WHERE PJXYSJ is NOT NULL
+		ORDER BY
+		<choose>
+			<when test="sort=='wxycs'">
+				wxycs
+			</when>
+			<when test="sort=='pjxysj'">
+				pjxysj
+			</when>
+			<otherwise>
+				jl_bf
+			</otherwise>
+		</choose> 
+		<choose>
+			<when test="sortCondition=='asc'">
+				ASC
+			</when>
+			<otherwise>
+				DESC
+			</otherwise>
+		</choose> 
+		)WHERE ROWNUM &lt; 11
+	</select>
+	
+	
+</mapper>

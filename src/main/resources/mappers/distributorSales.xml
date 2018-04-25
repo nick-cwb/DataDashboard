@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.data.dashboard.dao.DistributorSalesMapper">
+	<resultMap id="distributorSalesMap" type="com.data.dashboard.entity.DistributorSales">
+		<result property="agentId" column="agent_id" javaType="String" />
+		<result property="agentName" column="agent_abbr_name" javaType="String" />
+		<result property="distributorId" column="statics_dimension_id" javaType="String" />
+		<result property="distributorName" column="statics_dimension_name" javaType="String" />
+		<result property="totalSalesMon" column="month_total_amount" javaType="String" />
+		<result property="totalSalesDay" column="day_total_amount" javaType="String" />
+	</resultMap>
+
+	<select id="queryDistributorSales" parameterType="java.util.HashMap" resultMap="distributorSalesMap">
+		SELECT * FROM(
+		SELECT
+		statics_orders.total_amount total_amount,
+		statics_orders.day_total_amount day_total_amount,
+		statics_orders.month_total_amount month_total_amount,
+		statics_orders.week_total_amount week_total_amount,
+		statics_orders.total_order_counts total_order_counts,
+		statics_orders.day_total_order_counts day_total_order_counts,
+		statics_orders.week_total_order_counts week_total_order_counts,
+		statics_orders.month_total_order_counts month_total_order_counts,
+		statics_orders.per_customer_transaction per_customer_transaction,
+		statics_orders.day_per_customer_transaction day_per_customer_transaction,
+		statics_orders.month_per_customer_transaction
+		month_per_customer_transaction,
+		statics_orders.week_per_customer_transaction
+		week_per_customer_transaction,
+		statics_orders.statics_dimension_id statics_dimension_id,
+		statics_orders.data_date data_date,
+		statics_orders.statics_type statics_type,
+		statics_orders.statics_dimension_name statics_dimension_name,
+		statics_orders.week_amount_increase_percent week_amount_increase_percent,
+		statics_orders.month_amount_increase_percent
+		month_amount_increase_percent,
+		statics_orders.day_amount_increase_percent
+		day_amount_increase_percent,
+		statics_orders.week_count_increase_percent
+		week_count_increase_percent,
+		statics_orders.month_count_increase_percent
+		month_count_increase_percent,
+		statics_orders.day_count_increase_percent day_count_increase_percent,
+		statics_orders.day_avg_increase_percent day_avg_increase_percent,
+		statics_orders.week_avg_increase_percent week_avg_increase_percent,
+		statics_orders.month_avg_increase_percent month_avg_increase_percent,
+		t_1.agent_abbr_name agent_abbr_name,
+		t_1.agent_id agent_id
+		FROM
+		STATICS_ORDERS statics_orders
+		LEFT JOIN (
+		(
+		SELECT DISTINCT
+		A .agent_id agent_id,
+		b.agent_abbr_name agent_abbr_name,
+		A .distribution_id distribution_id,
+		A .distribution_name distribution_name
+		FROM
+		deal_store A
+		LEFT JOIN dimension_agent_province b ON A .agent_id = b.agent_id
+		)
+		UNION ALL
+		(
+		SELECT DISTINCT
+		'0000001',
+		'全国',
+		A .distribution_id distribution_id,
+		A .distribution_name distribution_name
+		FROM
+		deal_store A
+		)
+		) t_1 ON statics_orders.statics_dimension_id = t_1.distribution_id
+		WHERE
+		statics_orders.data_date = CAST (
+		TO_CHAR (SYSDATE, 'yyyymmdd') AS INT
+		)
+		AND statics_orders.statics_type IN (1)
+		AND t_1.agent_id = #{regionId}
+
+		<choose>
+			<when test="condition=='day' and sort=='asc'">
+				ORDER BY statics_orders.day_total_amount ASC
+			</when>
+			<when test="condition=='day' and sort=='desc'">
+				ORDER BY statics_orders.day_total_amount DESC
+			</when>
+			<when test="condition=='month' and sort=='asc'">
+				ORDER BY statics_orders.month_total_amount ASC
+			</when>
+			<otherwise>
+				ORDER BY statics_orders.month_total_amount DESC
+			</otherwise>
+		</choose>
+		)WHERE ROWNUM &lt; 11
+	</select>
+
+</mapper>

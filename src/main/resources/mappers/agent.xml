@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.data.dashboard.dao.AgentMapper">
+	<resultMap id="agentMap" type="com.data.dashboard.entity.Agent">
+		<id property="agentId" column="agent_id" javaType="String" />
+		<result property="agentName" column="agent_name" javaType="String" />
+		<result property="agentAbbrName" column="agent_abbr_name" javaType="String" />
+	</resultMap>
+	
+	<select id="queryAgentList"  resultMap="agentMap">
+		SELECT
+			agent_name agent_name,
+			agent_id agent_id,
+			agent_abbr_name agent_abbr_name
+		FROM
+			DIMENSION_AGENT_PROVINCE
+		WHERE
+			original_province_id IS NOT NULL
+			AND agent_id != '0000001'
+		GROUP BY
+			agent_id,
+			agent_name,
+			agent_abbr_name
+	</select>
+
+</mapper>

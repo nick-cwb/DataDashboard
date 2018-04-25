@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.data.dashboard.dao.FansAnalysisMapper">
+	<resultMap id="fansAnalysisMap" type="com.data.dashboard.entity.FansAnalysis">
+		<result property="agentName" column="agent_name" javaType="String" />
+		<result property="newFans" column="new_attention_count" javaType="String" />
+		<result property="netIncreaseFans" column="add_new_attention_count" javaType="String" />
+		<result property="activeFans" column="fans_online_count" javaType="String" />
+		<result property="date" column="timess" javaType="String" />
+	</resultMap>
+	
+	<select id="queryAgentFansInfoDay" parameterType="java.util.HashMap" resultMap="fansAnalysisMap">
+		SELECT
+			AGENT.fans_source_id fans_source_id,
+			AGENT.agent_id agent_id,
+			AGENT.agent_name agent_name,
+			AGENT.timess timess,
+			AGENT.new_attention_count new_attention_count,
+			AGENT.un_attention_count un_attention_count,
+			AGENT.add_new_attention_count add_new_attention_count,
+			AGENT.fans_count fans_count,
+			AGENT.fans_online_count fans_online_count,
+			AGENT.avg_activity_degree avg_activity_degree
+		FROM
+			TAR_FANS_INFO_S_D_AGENT AGENT
+		WHERE
+			(
+				AGENT.timess = TO_CHAR (SYSDATE, 'YYYY-MM-DD')
+			)
+		AND fans_source_id = '0'
+		ORDER BY
+		<choose>
+			<when test="condition=='netIncreaseFans'">
+				add_new_attention_count
+			</when>
+			<when test="condition=='activeFans'">
+				fans_online_count
+			</when>
+			<otherwise>
+				new_attention_count
+			</otherwise>
+		</choose>
+		DESC
+	</select>
+
+
+	<select id="queryAgentFansInfoMon" parameterType="java.util.HashMap" resultMap="fansAnalysisMap">
+		SELECT
+			MON.fans_source_id fans_source_id,
+			MON.agent_id agent_id,
+			MON.agent_name agent_name,
+			MON.timess_month timess_month,
+			MON.new_attention_count new_attention_count,
+			MON.un_attention_count un_attention_count,
+			MON.add_new_attention_count add_new_attention_count,
+			MON.fans_count fans_count,
+			MON.fans_online_count fans_online_count,
+			MON.avg_activity_degree avg_activity_degree
+		FROM
+			TAR_FANS_INFO_S_D_AGENT_MON MON
+		WHERE
+			(
+				MON.timess_month = TO_CHAR (SYSDATE, 'YYYY-MM')
+			)
+		AND fans_source_id = '0'
+		ORDER BY 
+		<choose>
+			<when test="condition=='netIncreaseFans'">
+				add_new_attention_count
+			</when>
+			<when test="condition=='activeFans'">
+				fans_online_count
+			</when>
+			<otherwise>
+				new_attention_count
+			</otherwise>
+		</choose>
+		DESC
+	</select>
+	
+	
+	<select id="queryDistributorFansInfoDay" parameterType="java.util.HashMap" resultMap="fansAnalysisMap">
+		select * FROM(
+		SELECT
+			M .fans_source_id fans_source_id,
+			M .store_id store_id,
+			M .store_name agent_name,
+			M .timess timess,
+			M .new_attention_count new_attention_count,
+			M .un_attention_count un_attention_count,
+			M .add_new_attention_count add_new_attention_count,
+			M .fans_count fans_count,
+			M .fans_online_count fans_online_count,
+			M .avg_activity_degree avg_activity_degree
+		FROM
+			TAR_FANS_INFO_S_D_A_STORE_M M
+		WHERE
+			(
+				M .timess = TO_CHAR (SYSDATE, 'YYYY-MM-DD')
+			)
+		AND fans_source_id = '0'
+		ORDER BY
+		<choose>
+			<when test="condition=='netIncreaseFans'">
+				add_new_attention_count
+			</when>
+			<when test="condition=='activeFans'">
+				fans_online_count
+			</when>
+			<otherwise>
+				new_attention_count
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="sortCondition=='asc'">
+				ASC
+			</when>
+			<otherwise>
+				DESC
+			</otherwise>
+		</choose> 
+		)WHERE ROWNUM &lt; 11
+	</select>
+	
+	
+	
+	<select id="queryDistributorFansInfoMon" parameterType="java.util.HashMap" resultMap="fansAnalysisMap">
+		select * FROM(
+		SELECT
+			MON.fans_source_id fans_source_id,
+			MON.store_id store_id,
+			MON.store_name agent_name,
+			MON.timess_month timess_month,
+			MON.new_attention_count new_attention_count,
+			MON.un_attention_count un_attention_count,
+			MON.add_new_attention_count add_new_attention_count,
+			MON.fans_count fans_count,
+			MON.fans_online_count fans_online_count,
+			MON.avg_activity_degree avg_activity_degree
+		FROM
+			TAR_FANS_INFO_S_D_A_STORE_M_MON MON
+		WHERE
+			(
+				MON.timess_month = TO_CHAR (SYSDATE, 'YYYY-MM')
+			)
+		AND fans_source_id = '0'
+		ORDER BY 
+		<choose>
+				<when test="condition=='netIncreaseFans'">
+					add_new_attention_count
+				</when>
+				<when test="condition=='activeFans'">
+					fans_online_count
+				</when>
+				<otherwise>
+					new_attention_count
+				</otherwise>
+			</choose>
+			<choose>
+				<when test="sortCondition=='asc'">
+					ASC
+				</when>
+				<otherwise>
+					DESC
+				</otherwise>
+			</choose> 
+			)WHERE ROWNUM &lt; 11	
+	</select>
+	
+	
+</mapper>

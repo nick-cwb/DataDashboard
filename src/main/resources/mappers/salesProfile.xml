@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.data.dashboard.dao.SalesTargetMapper">
+	<resultMap id="salesTargetMap" type="com.data.dashboard.entity.SalesTarget">
+		<result property="totalSalesYear" column="total_amount" javaType="String" />
+		<result property="totalSalesMon" column="month_total_amount" javaType="String" />
+		<result property="totalSalesDay" column="day_total_amount" javaType="String" />
+		<result property="totalOrders" column="total_order_counts" javaType="String" />
+		<result property="perCustomerTransaction" column="per_customer_transaction" javaType="String" />
+	</resultMap>
+	
+	<select id="getSalesTarget" parameterType="String" resultMap="salesTargetMap">
+		SELECT
+			A .data_date data_date,
+			A .rq rq,
+			A .statics_dimension_id statics_dimension_id,
+			A .total_amount total_amount,
+			A .day_total_amount day_total_amount,
+			A .month_total_amount month_total_amount,
+			A .total_order_counts total_order_counts,
+			A .per_customer_transaction per_customer_transaction,
+			ROUND (
+				CASE
+				WHEN A .total_amount_zt = 0 THEN
+					0
+				ELSE
+					A .total_amount / A .total_amount_zt - 1
+				END,
+				4
+			) * 100 day_amount_increase_percent,
+			ROUND (
+				CASE
+				WHEN A .total_amount_sz = 0 THEN
+					0
+				ELSE
+					A .total_amount / A .total_amount_sz - 1
+				END,
+				4
+			) * 100 week_amount_increase_percent,
+			ROUND (
+				CASE
+				WHEN A .total_amount_sy = 0 THEN
+					0
+				ELSE
+					A .total_amount / A .total_amount_sy - 1
+				END,
+				4
+			) * 100 month_amount_increase_percent,
+			ROUND (
+				CASE
+				WHEN A .total_order_counts_zt = 0 THEN
+					0
+				ELSE
+					A .total_order_counts / A .total_order_counts_zt - 1
+				END,
+				4
+			) * 100 day_count_increase_percent,
+			ROUND (
+				CASE
+				WHEN A .total_order_counts_sz = 0 THEN
+					0
+				ELSE
+					A .total_order_counts / A .total_order_counts_sz - 1
+				END,
+				4
+			) * 100 week_count_increase_percent,
+			ROUND (
+				CASE
+				WHEN A .total_order_counts_sy = 0 THEN
+					0
+				ELSE
+					A .total_order_counts / A .total_order_counts_sy - 1
+				END,
+				4
+			) * 100 month_count_increase_percent,
+			ROUND (
+				CASE
+				WHEN A .month_total_amount_zt = 0 THEN
+					0
+				ELSE
+					A .month_total_amount / A .month_total_amount_zt - 1
+				END,
+				4
+			) * 100 day_mamount_increase_percent,
+			ROUND (
+				CASE
+				WHEN A .month_total_amount_sz = 0 THEN
+					0
+				ELSE
+					A .month_total_amount / A .month_total_amount_sz - 1
+				END,
+				4
+			) * 100 week_mamount_increase_percent,
+			ROUND (
+				CASE
+				WHEN A .month_total_amount_sy = 0 THEN
+					0
+				ELSE
+					A .month_total_amount / A .month_total_amount_sy - 1
+				END,
+				4
+			) * 100 month_mamount_increase_percent,
+			ROUND (
+				CASE
+				WHEN A .per_customer_transaction_zt = 0 THEN
+					0
+				ELSE
+					A .per_customer_transaction / A .per_customer_transaction_zt - 1
+				END,
+				4
+			) * 100 day_avg_increase_percent,
+			ROUND (
+				CASE
+				WHEN A .per_customer_transaction_sz = 0 THEN
+					0
+				ELSE
+					A .per_customer_transaction / A .per_customer_transaction_sz - 1
+				END,
+				4
+			) * 100 week_avg_increase_percent,
+			ROUND (
+				CASE
+				WHEN A .per_customer_transaction_sy = 0 THEN
+					0
+				ELSE
+					A .per_customer_transaction / A .per_customer_transaction_sy - 1
+				END,
+				4
+			) * 100 month_avg_increase_percent
+		FROM
+			v_ui_fact_orders A
+		WHERE STATICS_DIMENSION_ID = #{regionName}
+	</select>
+	
+
+  
+</mapper>

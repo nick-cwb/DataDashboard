@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.data.dashboard.dao.FansTargetMapper">
+	<resultMap id="fansTargetMap" type="com.data.dashboard.entity.FansTarget">
+		<result property="newFans" column="new_attention_count" javaType="String" />
+		<result property="netIncreaseFans" column="add_new_attention_count" javaType="String" />
+		<result property="reducedFans" column="un_attention_count" javaType="String" />
+		<result property="countFans" column="fans_count" javaType="String" />
+		<result property="activeFans" column="fans_online_count" javaType="String" />
+		<result property="avgActivity" column="avg_activity_degree" javaType="String" />
+		<result property="date" column="timess" javaType="String" />
+	</resultMap>
+	
+	<select id="queryFansTarget"   parameterType="String" resultMap="fansTargetMap">
+		SELECT
+			AGENT.timess timess,
+			AGENT.agent_id agent_id,
+			AGENT.agent_name agent_name,
+			AGENT.new_attention_count new_attention_count,
+			AGENT.un_attention_count un_attention_count,
+			AGENT.add_new_attention_count add_new_attention_count,
+			AGENT.fans_count fans_count,
+			AGENT.fans_online_count fans_online_count,
+			AGENT.avg_activity_degree avg_activity_degree,
+			AGENT.sys_time sys_time
+		FROM
+			TAR_FANS_INFO_AGENT AGENT
+		WHERE
+			AGENT.timess = to_char(sysdate,'yyyy-mm-dd') and AGENT_ID = #{regionId}	
+	</select>
+	
+		<select id="queryFansTrendDay" resultMap="fansTargetMap">
+		SELECT
+			t_1.fans_source_id fans_source_id,
+			t_1.timess timess,
+			t_1.new_attention_count new_attention_count,
+			t_1.un_attention_count un_attention_count,
+			t_1.add_new_attention_count add_new_attention_count,
+			t_1.fans_count fans_count,
+			t_1.fans_online_count fans_online_count,
+			t_1.avg_activity_degree avg_activity_degree
+		FROM
+			TAR_FANS_INFO_S_DATE t_1
+		WHERE fans_source_id = '0' AND
+		TIMESS BETWEEN to_char(sysdate-9,'yyyy-mm-dd') 
+		           and    to_char(sysdate,'yyyy-mm-dd') 
+		
+		ORDER BY
+			timess ASC	
+	</select>
+	
+	<select id="queryFansTrendMon" resultMap="fansTargetMap">
+		SELECT
+			MON.fans_source_id fans_source_id,
+			MON.timess_month timess,
+			MON.new_attention_count new_attention_count,
+			MON.un_attention_count un_attention_count,
+			MON.add_new_attention_count add_new_attention_count,
+			MON.fans_count fans_count,
+			MON.fans_online_count fans_online_count,
+			MON.avg_activity_degree avg_activity_degree
+		FROM
+			TAR_FANS_INFO_S_DATE_MON MON
+		WHERE fans_source_id = '0' AND 
+		timess_month BETWEEN
+		to_char(trunc(add_months(last_day(sysdate), -11) ), 'yyyy-mm') and to_char(sysdate,'yyyy-mm')
+		ORDER BY
+			timess_month ASC	
+	</select>
+	
+</mapper>
